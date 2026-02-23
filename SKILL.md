@@ -1,96 +1,97 @@
 # X-Learning Skill
 
-Transform X (Twitter) bookmarks into structured learning notes in your Obsidian vault.
+将 X（Twitter）收藏转化为结构化学习笔记，自动归档到 Obsidian vault。
 
-## What it does
+## 解决什么问题
 
-1. **Scans** your inbox folder for new X bookmark analysis files
-2. **Extracts** original article titles
-3. **Renames** files with clean format: `MM月DD日 + Title`
-4. **Classifies** content into categories (AI/Trading/Content)
-5. **Moves** files to appropriate vault folders
+每天在 X 上刷到大量有价值的深度内容，但：
+- 收藏后基本不会再看
+- 笔记散落在各处，无法系统化检索
+- 想回顾时找不到重点
 
-## Setup
+X-Learning 自动完成：分析 → 分类 → 归档 → 检索友好
 
-### 1. Configure paths
+## 功能
 
-Edit the script to match your setup:
+### 智能分类
+根据内容关键词自动归类：
+| 关键词 | 目标文件夹 |
+|--------|-----------|
+| Agent、AI、自动化、MCP、OpenClaw、龙虾 | `agent进化/` |
+| 期权、交易、K线、量化、风控 | `投资交易类/` |
+| 小红书、内容、营销、爆款 | `内容创作类/` |
 
+### 标题提取与清洗
+原始文件名：
+```
+xxx111god-这几天在鼓捣_永续 Agent_，受到...-20260222.md
+```
+自动转为：
+```
+2月22日这几天在鼓捣永续 Agent.md
+```
+
+### 自动归档
+- 检测今日新文章
+- 提取标题
+- 分类
+- 移动到 vault
+
+### 定时运行
+Cron job `学习内容扫描`：10:00, 14:00, 18:00, 22:00
+
+## 配置
+
+### 1. 路径设置
+编辑 `scripts/x-learning-process.py`：
 ```python
-UNREAD_DIR = Path.home() / "Documents" / "未读"  # Your inbox folder
-VAULT_DIR = Path.home() / "Documents" / "FLUX学习笔记"  # Your Obsidian vault
+UNREAD_DIR = Path.home() / "Documents" / "未读"
+VAULT_DIR = Path.home() / "Documents" / "FLUX学习笔记"
 ```
 
-### 2. Create vault structure
-
+### 2. Vault 结构
 ```
-YourVault/
-├── agent进化/      # AI, automation, agents
-├── 内容创作类/     # Content creation, marketing
-└── 投资交易类/     # Trading, investing
+FLUX学习笔记/
+├── agent进化/
+├── 内容创作类/
+└── 投资交易类/
 ```
 
-### 3. (Optional) Add to cron
+## 使用
 
 ```bash
-# Run every 6 hours
-0 10,14,18,22 * * * python3 /path/to/x-learning-process.py
-```
-
-## Usage
-
-### Manual processing
-
-```bash
+# 手动处理
 python3 scripts/x-learning-process.py
 
-# Preview mode (don't actually move files)
+# 预览模式（不移动）
 python3 scripts/x-learning-process.py --dry
 ```
 
-### Via conversation
-
+对话触发：
 ```
 User: 处理今天的 X 收藏
-Agent: [Scans, classifies, and archives new articles]
+Agent: 扫描到 2 篇新文章，已归档
 ```
 
-## Classification Rules
-
-| Keywords | Target Folder |
-|----------|---------------|
-| Agent, AI, automation, deployment, MCP | `agent进化/` |
-| Options, trading, investing, K-line | `投资交易类/` |
-| Content, marketing, XHS, video | `内容创作类/` |
-| Uncertain | `agent进化/` (default) |
-
-## File Naming
-
-**Before**: `xxx111god-这几天在鼓捣_永续 Agent_-20260222.md`
-**After**: `2月22日这几天在鼓捣永续 Agent.md`
-
-## Dependencies
-
-- Python 3.8+
-- No external packages required
-
-## Workflow Integration
-
-This skill works best with:
-1. **X bookmark monitoring** (`x-bookmarks-watch.py`)
-2. **AI analysis** (generates analysis files)
-3. **This processor** (archives to vault)
-
----
-
-## 自定义配置
-
-修改 `scripts/x-learning-process.py` 中的 `CATEGORIES` 字典来调整分类规则：
+## 分类规则自定义
 
 ```python
 CATEGORIES = {
-    "agent进化": ["agent", "ai", "自动化", ...],
-    "投资交易类": ["期权", "交易", ...],
-    "内容创作类": ["内容", "小红书", ...]
+    "agent进化": ["agent", "ai", "自动化", "mcp"],
+    "投资交易类": ["期权", "交易", "k线"],
+    "内容创作类": ["小红书", "内容", "营销"]
 }
+```
+
+## 依赖
+
+- Python 3.8+
+- 无外部包
+
+## 工作流
+
+```
+X 收藏 → x-bookmarks-watch.py 分析 → 未读/ 
+       → x-learning-process.py 分类+归档 
+       → FLUX学习笔记/{类别}/
 ```
