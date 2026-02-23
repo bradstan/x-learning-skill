@@ -13,7 +13,7 @@ Transform X (Twitter) bookmarks into structured learning notes in your Obsidian 
 
 ```bash
 # Clone or download this skill
-git clone https://github.com/your-username/x-learning-skill.git
+git clone https://github.com/bradstan/x-learning-skill.git
 
 # Run the processor
 python3 scripts/x-learning-process.py
